@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+    <style>*{margin:0;padding:0;}body{display:flex;justify-content:center;align-items:center;}</style>
+</head>
+<body>
+  <canvas id="canvas_1"></canvas>
+  <script>
+
+function renderCube2d(){
+    // denken warum height*-1 - also klar, funktioniert, aber warum? an mein zukünftiges Ich: sorry, wenn ich zu blöd war ;|
+    // man könnte auch statt canvas.height/width / 2 die 2 durch eine variable ersetzen, die die größte Differenz im cube3d array beschreibt, die zwischen x objekten oder y objekten vorliegt (es muss die größte überhaupt genommen werden, nicht einzeln, sonst ist es verzerrt)
+    // problem lösen bei perspektivischer ansicht -> z muss größer als 1 sein, sonst ist alles kaputt, dann rotiert aber alles scheiße -> lösung herausfinden! // clipping ist dein freund, simon :)
+    //generell schwachstellen im Code überarbeiten (z. B. resetCube3d(); , auch wenn mir gerade nichts besseres einfällt :( ) // Ha, siehe unten, vielleicht eine lösung gefunden :)
+    // wenn y-achse gedreht wird, dreht er sich nicht mehr um die default x-achse (wenn x gedrückt ist), sondern um die gedrehte x-achsez
+    // clipping
+    //rotation um camera bei bewegung der !!maus!!
+    // fov
+    // geht resetCube3d() weg, wenn ich einfach nicht rotate(XYZ, radiansXYZ) sondern vorher radiansNeu = radiansAlt +/- 0.01 und dann rotate(XYZ, radiansNeuXYZ Differenz zu radiansAltXYZ) machen? Weil dann würden doch die schon gedrehten Punkte nur um die angeforderte Drehung gedreht werden und nicht immer um die schon vorhandene Drehung + 0.01, daher kommt auch das superschnelle Drehen ohne resetCube3d(). 
+    // einfach den ganzen code rund um das *canvas.height/2, +1, usw. überdenken
+    // der würfel spiegelt sich 3D, wenn ein Punkt kleiner als -1 ist, da er dann selbst mit +1 kleiner als 1 ist, also negativ und die augerechnete zahl / z (z ist dann negativ) negativ macht. Dadurch wird der Würfel gespiegelt. Die Frage ist nur: Wie lösen? Rendert man die betroffenen Dreiecke ganz nicht (dann gibt es aber auch Dreiecke, die von +1 bis -2 gehen und plötzlich eine Lücke im Bild entsteht) oder rendert man nur die betroffenen Punkte nicht (wodurch auch eine Kücke entsteht) oder nimmt man den Betrag (wodurch das Bild zwar nicht mehr gespiegelt wird, aber trotzdem kleiner wird, denn a / -2 ist klein und passt ins Bild, man würde also wieder von dem Würfel wegfliegen, weil er dann kleiner wird, aber nicht gespiegelt; a / -0.5 ist groß und man sieht es im Bild gar nicht mehr, macht also eigentlich keine großen Probleme (Bis auf Rechenleistung bei a / 0.000001 vielleicht).)? Irgendwelche Ideen?
+    // warum spawnt man kurz vor dem würfel? ja, schön, aber überdenken, warum.
+    // wenn y-achse gedreht wird, dreht er sich nicht mehr um die default x-achse (wenn x gedrückt ist), sondern um die gedrehte x-achsez
+    //texture and color
+    //backface culling
+    //wenn in würfel reinfliegen, automatisch wieder rasufliegen -> fehler beheben!
+    // bei direction maximal 1 PI, sonst kaputt -> einbauen!
+canvas.beginPath();
+for (r = 0; r < cube3d.length; r++){
+canvas.clearRect(0, 0, canvas_element_1.width, canvas_element_1.height);
+x_1 = Math.cos(directionY)*(cube3d[r][0][0]-cameraX)-Math.sin(directionY)*(cube3d[r][0][2]-cameraZ);
+z_1 = (cube3d[r][0][1]-cameraY+fovx)*Math.sin(directionX)+(Math.sin(directionY)*(cube3d[r][0][0]-cameraX+fovx)+Math.cos(directionY)*(cube3d[r][0][2]-cameraZ+fovx))*Math.cos(directionX);
+y_1 = (cube3d[r][0][1]-cameraY)*Math.cos(directionX)-(Math.sin(directionY)*(cube3d[r][0][0]-cameraX)+Math.cos(directionY)*(cube3d[r][0][2]-cameraZ))*Math.sin(directionX);
+
+x_2 = Math.cos(directionY)*(cube3d[r][1][0]-cameraX)-Math.sin(directionY)*(cube3d[r][1][2]-cameraZ);
+z_2 = (cube3d[r][1][1]-cameraY+fovx)*Math.sin(directionX)+(Math.sin(directionY)*(cube3d[r][1][0]-cameraX+fovx)+Math.cos(directionY)*(cube3d[r][1][2]-cameraZ+fovx))*Math.cos(directionX);
+y_2 = (cube3d[r][1][1]-cameraY)*Math.cos(directionX)-(Math.sin(directionY)*(cube3d[r][1][0]-cameraX)+Math.cos(directionY)*(cube3d[r][1][2]-cameraZ))*Math.sin(directionX);
+
+x_3 = Math.cos(directionY)*(cube3d[r][2][0]-cameraX)-Math.sin(directionY)*(cube3d[r][2][2]-cameraZ);
+z_3 = (cube3d[r][2][1]-cameraY+fovx)*Math.sin(directionX)+(Math.sin(directionY)*(cube3d[r][2][0]-cameraX+fovx)+Math.cos(directionY)*(cube3d[r][2][2]-cameraZ+fovx))*Math.cos(directionX);
+y_3 = (cube3d[r][2][1]-cameraY)*Math.cos(directionX)-(Math.sin(directionY)*(cube3d[r][2][0]-cameraX)+Math.cos(directionY)*(cube3d[r][2][2]-cameraZ))*Math.sin(directionX);
+
+canvas.moveTo(((x_1/z_1)+1)*(canvas_element_1.width/2), ((y_1/z_1)*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo(((x_2/z_2)+1)*(canvas_element_1.width/2), ((y_2/z_2)*-1+1)*(canvas_element_1.height/2));
+
+canvas.moveTo(((x_2/z_2)+1)*(canvas_element_1.width/2), ((y_2/z_2)*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo(((x_3/z_3)+1)*(canvas_element_1.width/2), ((y_3/z_3)*-1+1)*(canvas_element_1.height/2));
+
+canvas.moveTo(((x_3/z_3)+1)*(canvas_element_1.width/2), ((y_3/z_3)*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo(((x_1/z_1)+1)*(canvas_element_1.width/2), ((y_1/z_1)*-1+1)*(canvas_element_1.height/2));
+}
+
+canvas.stroke();
+}
+      
+function rotate(v, radians){
+    if (v == "Z"){
+for (w = 0; w < cube3d.length; w++){
+    for (t = 0; t < 3; t++){
+    x = cube3d[w][t][0];
+    y = cube3d[w][t][1];
+cube3d[w][t][0] = Math.cos(radians)*x + Math.sin(radians)*y;
+cube3d[w][t][1] = Math.cos(radians)*y - Math.sin(radians)*x;
+    }}}
+
+if (v == "X"){
+for (w = 0; w < cube3d.length; w++){
+    for (t = 0; t < 3; t++){
+    y = cube3d[w][t][1];
+    z = cube3d[w][t][2];
+cube3d[w][t][1] = y * Math.cos(radians) - z * Math.sin(radians);
+cube3d[w][t][2] = y * Math.sin(radians) + z * Math.cos(radians);
+}}
+}
+
+if (v == "Y"){
+for (w = 0; w < cube3d.length; w++){
+    for (t = 0; t < 3; t++){
+    x = cube3d[w][t][0];
+    z = cube3d[w][t][2];
+cube3d[w][t][0] = Math.cos(radians)*x - Math.sin(radians)*z;
+cube3d[w][t][2] = Math.sin(radians)*x + Math.cos(radians)*z;
+}}}
+
+}      
+
+const canvas_element_1 = document.getElementById("canvas_1");
+canvas_element_1.width = window.innerHeight;
+canvas_element_1.height = window.innerHeight;
+const canvas = canvas_element_1.getContext('2d');
+
+cube3d = [
+    [[-0.5,-0.5,0.5],[0.5,-0.5,0.5],[0.5,0.5,0.5]],
+    [[-0.5,-0.5,0.5],[0.5,0.5,0.5],[-0.5,0.5,0.5]],
+    [[0.5,-0.5,0.5],[0.5,-0.5,-0.5],[0.5,0.5,-0.5]],
+    [[0.5,-0.5,0.5],[0.5,0.5,-0.5],[0.5,0.5,0.5]],
+    [[0.5,-0.5,-0.5],[-0.5,-0.5,-0.5],[-0.5,0.5,-0.5]],
+    [[0.5,-0.5,-0.5],[-0.5,0.5,-0.5],[0.5,0.5,-0.5]],
+    [[-0.5,-0.5,-0.5],[-0.5,-0.5,0.5],[-0.5,0.5,0.5]],
+    [[-0.5,-0.5,-0.5],[-0.5,0.5,0.5],[-0.5,0.5,-0.5]],
+    [[-0.5,0.5,0.5],[0.5,0.5,0.5],[0.5,0.5,-0.5]],
+    [[-0.5,0.5,0.5],[0.5,0.5,-0.5],[-0.5,0.5,-0.5]],
+    [[0.5,-0.5,0.5],[-0.5,-0.5,-0.5],[0.5,-0.5,-0.5]],
+    [[0.5,-0.5,0.5],[-0.5,-0.5, 0.5],[-0.5,-0.5,-0.5]]
+];
+
+fovy = 1;
+fovx = 1;
+directionX = 0;
+directionY = 0;
+cameraX = 0;
+cameraY = 0;
+cameraZ = 0;
+
+renderCube2d();
+
+radiansZ = 0;
+radiansY = 0;
+radiansX = 0;
+minus = -1;
+
+document.onkeydown = function(){
+    if (event.key == "x"){
+        if (minus != 1){rotate("X", 0.01);}
+        else {rotate("X", -0.01);}
+    }
+    if (event.key == "y"){
+        if (minus != 1){rotate("Y", 0.01);}
+        else {rotate("Y", -0.01);}
+    }
+    if (event.key == "z"){
+        if (minus != 1){rotate("Z", 0.01);}
+        else {rotate("Z", -0.01);}
+    }
+    if (event.key == "-"){
+        minus = minus*-1;
+    }
+    if (event.key == " "){
+        cameraY = cameraY + 0.1;
+    }
+    if (event.key == "Shift"){
+        cameraY = cameraY - 0.1;
+    }
+    if (event.key == "w"){
+        cameraZ = cameraZ + 0.1;
+    }
+    if (event.key == "s"){
+        cameraZ = cameraZ - 0.1;
+    }
+    if (event.key == "d"){
+        cameraX = cameraX + 0.1;
+    }
+    if (event.key == "a"){
+        cameraX = cameraX - 0.1;
+    }
+    if (event.key == "ArrowUp"){
+       directionX = directionX + 0.1;
+    }
+    if (event.key == "ArrowDown"){
+       directionX = directionX - 0.1;
+    }
+    if (event.key == "ArrowRight"){
+       directionY = directionY + 0.1;
+    }
+    if (event.key == "ArrowLeft"){
+       directionY = directionY - 0.1;
+    }
+    if (event.key == "i"){
+       fovx = fovx + 0.01;console.log(fovx);
+       fovy = fovy + 0.01;
+    }
+    if (event.key == "o"){
+       fovx = fovx - 0.01;console.log(fovx);
+       fovy = fovy - 0.01;
+    }
+    renderCube2d();}
+  </script>
+</body>
+</html>

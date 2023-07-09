@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+  <style>*{margin:0;padding:0;}</style>
+</head>
+<body>
+  <canvas id="canvas_1"></canvas>
+  <script>
+
+function renderCube2d(){
+    // denken warum height*-1 - also klar, funktioniert, aber warum? an mein zukünftiges Ich: sorry, wenn ich zu blöd war ;|
+    // man könnte auch statt canvas.height/width / 2 die 2 durch eine variable ersetzen, die die größte Differenz im cube3d array beschreibt, die zwischen x objekten oder y objekten vorliegt (es muss die größte überhaupt genommen werden, nicht einzeln, sonst ist es verzerrt)
+// verzerrung im non-quadrat raum wegmachen
+    // generell irgendwie ein bisschen verzerrt - warum? // orthogonal war es natürlich, sonst könnte ich ja gar nicht dazu sagen :)
+    // problem lösen bei perspektivischer ansicht -> z muss größer als 1 sein, sonst ist alles kaputt, dann rotiert aber alles scheiße -> lösung herausfinden!
+     // Pi Kram überall einbauen und vllt. noch überarbeiten??
+    //generell schwachstellen im Code überarbeiten (z. B. resetCube3d(); , auch wenn mir gerade nichts besseres einfällt :( )
+canvas.beginPath();
+for (r = 0; r < 4; r++){
+
+canvas.moveTo((cube3d[r][0]+1)*(canvas_element_1.width/2), (cube3d[r][1]*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo((cube3d[(r+1)%4][0]+1)*(canvas_element_1.width/2), (cube3d[(r+1)%4][1]*-1+1)*(canvas_element_1.height/2));
+
+canvas.moveTo((cube3d[r+4][0]+1)*(canvas_element_1.width/2), (cube3d[r+4][1]*-1+1)*(canvas_element_1.height/2));0
+canvas.lineTo((cube3d[((r+1)%4)+4][0]+1)*(canvas_element_1.width/2), (cube3d[((r+1)%4)+4][1]*-1+1)*(canvas_element_1.height/2));
+
+canvas.moveTo((cube3d[r][0]+1)*(canvas_element_1.width/2), (cube3d[r][1]*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo((cube3d[r+4][0]+1)*(canvas_element_1.width/2), (cube3d[r+4][1]*-1+1)*(canvas_element_1.height/2));
+  
+    /*
+canvas.moveTo((cube3d[r][0]/cube3d[r][2]+1)*(canvas_element_1.width/2), (cube3d[r][1]/cube3d[r][2]*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo((cube3d[(r+1)%4][0]/cube3d[(r+1)%4][2]+1)*(canvas_element_1.width/2), (cube3d[(r+1)%4][1]/cube3d[(r+1)%4][2]*-1+1)*(canvas_element_1.height/2));
+
+canvas.moveTo((cube3d[r+4][0]/cube3d[r+4][2]+1)*(canvas_element_1.width/2), (cube3d[r+4][1]/cube3d[r+4][2]*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo((cube3d[((r+1)%4)+4][0]/cube3d[((r+1)%4)+4][2]+1)*(canvas_element_1.width/2), (cube3d[((r+1)%4)+4][1]/cube3d[((r+1)%4)+4][2]*-1+1)*(canvas_element_1.height/2));
+
+canvas.moveTo((cube3d[r][0]/cube3d[r][2]+1)*(canvas_element_1.width/2), (cube3d[r][1]/cube3d[r][2]*-1+1)*(canvas_element_1.height/2));
+canvas.lineTo((cube3d[r+4][0]/cube3d[r+4][2]+1)*(canvas_element_1.width/2), (cube3d[r+4][1]/cube3d[r+4][2]*-1+1)*(canvas_element_1.height/2));*/
+}
+
+canvas.stroke();
+}
+function rotate(v, radians){
+    if (v == "Z"){
+for (w = 0; w < cube3d.length; w++){
+cube3d[w][0] = Math.cos(radians)*cube3d[w][0] - Math.sin(radians)*cube3d[w][1];
+cube3d[w][1] = Math.sin(radians)*cube3d[w][0] + Math.cos(radians)*cube3d[w][1];
+canvas.clearRect(0, 0, canvas_element_1.width, canvas_element_1.height);}}
+    
+if (v == "X"){
+for (w = 0; w < cube3d.length; w++){
+cube3d[w][1] = Math.cos(radians)*cube3d[w][1] - Math.sin(radians)*cube3d[w][2];
+cube3d[w][2] = Math.sin(radians)*cube3d[w][1] + Math.cos(radians)*cube3d[w][2];
+canvas.clearRect(0, 0, canvas_element_1.width, canvas_element_1.height);}
+}
+
+if (v == "Y"){
+for (w = 0; w < cube3d.length; w++){
+cube3d[w][0] = Math.cos(radians)*cube3d[w][0] + Math.sin(radians)*cube3d[w][2];
+cube3d[w][2] = Math.cos(radians)*cube3d[w][2] - Math.sin(radians)*cube3d[w][0];
+canvas.clearRect(0, 0, canvas_element_1.width, canvas_element_1.height);}}
+
+}
+      const canvas_element_1 = document.getElementById("canvas_1");
+      canvas_element_1.width = window.innerWidth;
+      canvas_element_1.height = window.innerHeight;
+    const canvas = canvas_element_1.getContext('2d');
+
+function resetCube3d(){
+cube3d = [
+  [-0.5, -0.5, 0.5],
+  [0.5, -0.5, 0.5],
+  [0.5, -0.5, -0.5],
+  [-0.5, -0.5, -0.5],
+  [-0.5, 0.5, 0.5],
+  [0.5, 0.5, 0.5],
+  [0.5, 0.5, -0.5],
+  [-0.5, 0.5, -0.5]
+];}
+resetCube3d();
+renderCube2d();
+      
+radiansZ = 0;
+radiansY = 0;
+radiansX = 0;
+minus = -1;
+document.onkeydown = function(){
+    if (event.key == "z"){
+        if (minus != 1){radiansZ = radiansZ + 0.01;if (radiansZ >= Math.PI){radiansZ = radiansZ - Math.PI*2;}}
+        else {radiansZ = radiansZ - 0.01;if (radiansZ <= Math.PI){radiansZ = radiansZ + Math.PI*2;}}
+       }
+    if (event.key == "y"){
+        if (minus != 1){radiansY = radiansY + 0.01;}
+        else {radiansY = radiansY - 0.01;}
+       }
+    if (event.key == "x"){
+        if (minus != 1){radiansX = radiansX + 0.01;}
+        else {radiansX = radiansX - 0.01;}
+       }
+    if (event.key == "-"){
+        minus = minus*-1;
+    }
+      
+      
+     rotate("Y", radiansY);rotate("Z", radiansZ); rotate("X", radiansX);
+   
+    renderCube2d();resetCube3d();
+}
+  </script>
+</body>
+</html>
